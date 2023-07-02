@@ -6,7 +6,7 @@ from news.models import Comment
 
 @pytest.mark.django_db
 def test_anonymous_user_cant_create_comment(
-     client, news_instance, comment_form_data):
+        client, news_instance, comment_form_data):
     client.post(
         reverse("news:detail", kwargs={"pk": news_instance.pk}),
         data=comment_form_data
@@ -59,7 +59,7 @@ def test_author_can_delete_comment(author_client, comment_instance):
 
 @pytest.mark.django_db
 def test_authenticated_user_cannot_edit_other_comment(
-     admin_client, comment_instance):
+        admin_client, comment_instance):
     admin_client.post(
         reverse("news:edit", kwargs={"pk": comment_instance.pk}),
         data={"text": "Updated comment text"},
@@ -70,7 +70,7 @@ def test_authenticated_user_cannot_edit_other_comment(
 
 @pytest.mark.django_db
 def test_authenticated_user_delete_other_comment(
-     admin_client, comment_instance):
+        admin_client, comment_instance):
     admin_client.post(reverse("news:delete",
                               kwargs={"pk": comment_instance.pk}))
     assert Comment.objects.count != 0

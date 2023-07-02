@@ -31,7 +31,8 @@ def test_comment_order(client, news_instance_with_comments):
 
 @pytest.mark.django_db
 def test_anonymous_client_has_no_form(client, news_instance):
-    response = client.get(reverse("news:detail", kwargs={"pk": news_instance.pk}))
+    response = client.get(
+        reverse("news:detail", kwargs={"pk": news_instance.pk}))
     assert "form" not in response.context
 
 
