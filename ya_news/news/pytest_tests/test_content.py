@@ -27,7 +27,7 @@ def test_comment_order(client, news_instance_with_comments):
     assert "news" in response.context
     all_comments = response.context["news"].comment_set.all()
     assert [comment.created for comment in all_comments] == sorted(
-        [comment.created for comment in all_comments], reverse=True
+        [comment.created for comment in all_comments]
     )
 
 
