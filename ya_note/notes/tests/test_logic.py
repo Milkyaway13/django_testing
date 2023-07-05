@@ -1,9 +1,11 @@
+from http import HTTPStatus
+
 from django.test import TestCase, Client
 from django.urls import reverse
-from http import HTTPStatus
 from django.contrib.auth.models import User
-from notes.models import Note
+
 from pytils.translit import slugify as pytils_slugify
+from notes.models import Note
 
 
 class NoteCreationTest(TestCase):
@@ -27,16 +29,19 @@ class NoteCreationTest(TestCase):
         )
 
     def test_anonymous_user_cant_create_note(self):
+        self.assertEqual(Note.objects.count(), 2)
         response = self.client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertEqual(Note.objects.count(), 2)
 
     def test_authenticated_user_can_create_note(self):
+        self.assertEqual(Note.objects.count(), 2)
         response = self.auth_client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertEqual(Note.objects.count(), 3)
 
     def test_cannot_create_duplicate_slug(self):
+        self.assertEqual(Note.objects.count(), 2)
         response = self.auth_client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         response = self.auth_client.post(self.url, data=self.form_data)
@@ -66,6 +71,9 @@ class NoteCreationTest(TestCase):
         self.note_user1.refresh_from_db()
         self.assertEqual(
             self.note_user1.title, updated_data["title"]
+        )
+        self.assertEqual(
+            self.note_user1.text, updated_data["text"]
         )
 
     def test_user_cannot_edit_other_users_note(self):

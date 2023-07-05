@@ -1,5 +1,5 @@
-from django.urls import reverse
 import pytest
+from django.urls import reverse
 
 from news.models import Comment
 
@@ -7,6 +7,7 @@ from news.models import Comment
 @pytest.mark.django_db
 def test_anonymous_user_cant_create_comment(
         client, news_instance, comment_form_data):
+    assert Comment.objects.count() == 0
     client.post(
         reverse("news:detail", kwargs={"pk": news_instance.pk}),
         data=comment_form_data
@@ -18,15 +19,17 @@ def test_anonymous_user_cant_create_comment(
 def test_authenticated_user_can_create_comment(
     admin_client, news_instance, comment_form_data
 ):
+    assert Comment.objects.count() == 0
     admin_client.post(
         reverse("news:detail", kwargs={"pk": news_instance.pk}),
         data=comment_form_data
     )
-    assert Comment.objects.count() != 0
+    assert Comment.objects.count() == 1
 
 
 @pytest.mark.django_db
 def test_user_cant_use_bad_words(author_client, news_instance, bad_words):
+    assert Comment.objects.count() == 0
     bad_words_list, warning = bad_words
     bad_words_data = {"text": f"Какой-то текст,"
                       f"{bad_words_list[0]}, еще текст"}
@@ -52,6 +55,7 @@ def test_author_can_edit_comment(author_client, comment_instance):
 
 @pytest.mark.django_db
 def test_author_can_delete_comment(author_client, comment_instance):
+    assert Comment.objects.count() == 1
     author_client.post(reverse("news:delete",
                                kwargs={"pk": comment_instance.pk}))
     assert Comment.objects.count() == 0
@@ -71,6 +75,7 @@ def test_authenticated_user_cannot_edit_other_comment(
 @pytest.mark.django_db
 def test_authenticated_user_delete_other_comment(
         admin_client, comment_instance):
+    assert Comment.objects.count() == 1
     admin_client.post(reverse("news:delete",
                               kwargs={"pk": comment_instance.pk}))
-    assert Comment.objects.count != 0
+    assert Comment.objects.count() == 1
