@@ -29,24 +29,28 @@ class NoteCreationTest(TestCase):
         )
 
     def test_anonymous_user_cant_create_note(self):
-        self.assertEqual(Note.objects.count(), 2)
+        initial_amount_of_notes = Note.objects.count()
         response = self.client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertEqual(Note.objects.count(), 2)
+        self.assertEqual(Note.objects.count(), initial_amount_of_notes)
 
     def test_authenticated_user_can_create_note(self):
-        self.assertEqual(Note.objects.count(), 2)
+        initial_amount_of_notes = Note.objects.count()
         response = self.auth_client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertEqual(Note.objects.count(), 3)
+        self.assertEqual(
+            Note.objects.count(),
+            initial_amount_of_notes + 1)
 
     def test_cannot_create_duplicate_slug(self):
-        self.assertEqual(Note.objects.count(), 2)
+        initial_amount_of_notes = Note.objects.count()
         response = self.auth_client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         response = self.auth_client.post(self.url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(Note.objects.count(), 3)
+        self.assertEqual(
+            Note.objects.count(),
+            initial_amount_of_notes + 1)
 
     def test_auto_generate_slug(self):
         title = "Заголовок заметки"

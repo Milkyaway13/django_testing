@@ -7,29 +7,29 @@ from news.models import Comment
 @pytest.mark.django_db
 def test_anonymous_user_cant_create_comment(
         client, news_instance, comment_form_data):
-    assert Comment.objects.count() == 0
+    initial_amount_of_comments = Comment.objects.count()
     client.post(
         reverse("news:detail", kwargs={"pk": news_instance.pk}),
         data=comment_form_data
     )
-    assert Comment.objects.count() == 0
+    assert initial_amount_of_comments == Comment.objects.count()
 
 
 @pytest.mark.django_db
 def test_authenticated_user_can_create_comment(
     admin_client, news_instance, comment_form_data
 ):
-    assert Comment.objects.count() == 0
+    initial_amount_of_comments = Comment.objects.count()
     admin_client.post(
         reverse("news:detail", kwargs={"pk": news_instance.pk}),
         data=comment_form_data
     )
-    assert Comment.objects.count() == 1
+    assert initial_amount_of_comments + 1 == Comment.objects.count()
 
 
 @pytest.mark.django_db
 def test_user_cant_use_bad_words(author_client, news_instance, bad_words):
-    assert Comment.objects.count() == 0
+    initial_amount_of_comments = Comment.objects.count()
     bad_words_list, warning = bad_words
     bad_words_data = {"text": f"Какой-то текст,"
                       f"{bad_words_list[0]}, еще текст"}
@@ -40,7 +40,7 @@ def test_user_cant_use_bad_words(author_client, news_instance, bad_words):
     form = response.context["form"]
     assert "text" in form.errors
     assert form.errors["text"] == [warning]
-    assert Comment.objects.count() == 0
+    assert initial_amount_of_comments == Comment.objects.count()
 
 
 @pytest.mark.django_db
@@ -55,10 +55,10 @@ def test_author_can_edit_comment(author_client, comment_instance):
 
 @pytest.mark.django_db
 def test_author_can_delete_comment(author_client, comment_instance):
-    assert Comment.objects.count() == 1
+    initial_amount_of_comments = Comment.objects.count()
     author_client.post(reverse("news:delete",
                                kwargs={"pk": comment_instance.pk}))
-    assert Comment.objects.count() == 0
+    assert initial_amount_of_comments - 1 == Comment.objects.count()
 
 
 @pytest.mark.django_db
@@ -75,7 +75,7 @@ def test_authenticated_user_cannot_edit_other_comment(
 @pytest.mark.django_db
 def test_authenticated_user_delete_other_comment(
         admin_client, comment_instance):
-    assert Comment.objects.count() == 1
+    initial_amount_of_comments = Comment.objects.count()
     admin_client.post(reverse("news:delete",
                               kwargs={"pk": comment_instance.pk}))
-    assert Comment.objects.count() == 1
+    assert initial_amount_of_comments == Comment.objects.count()
